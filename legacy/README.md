@@ -69,6 +69,7 @@ The Velora Legacy System Integration framework provides comprehensive support fo
 - **VTAM (Virtual Telecommunications Access Method)**
 
 ### Payment Systems
+- **ISO 20022** (Universal financial messaging standard)
 - **ISO 8583** (Financial transaction messaging)
 - **SWIFT** (Society for Worldwide Interbank Financial Telecommunication)
 - **ACH** (Automated Clearing House)
@@ -172,6 +173,7 @@ print(f"Transaction ID: {result.transaction_id}")
 - [Legacy Integration Framework](legacy-integration.md) - Comprehensive integration framework
 - [Mainframe Integration](mainframe-integration.md) - IBM mainframe system integration
 - [Payment Integration](payment-integration.md) - Payment system integration
+- [ISO 20022 Integration](iso20022-integration.md) - ISO 20022 financial messaging standard
 - [Legacy Security](legacy-security.md) - Security and authentication integration
 - [Migration Strategies](migration-strategies.md) - Legacy system migration approaches
 
