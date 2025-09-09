@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: velora-core
+  namespace: velora
+  labels:
+    app: velora
+    component: core
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: velora
+      component: core
+  template:
+    metadata:
+      labels:
+        app: velora
+        component: core
+    spec:
+      containers:
+      - name: velora
+        image: velora:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: api
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: velora-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: velora-secrets
+              key: redis-url
+        - name: NEO4J_URL
+          valueFrom:
+            secretKeyRef:
+              name: velora-secrets
+              key: neo4j-url
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: velora-secrets
+              key: mongodb-url
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-service:9092"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: models
+          mountPath: /app/models
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: velora-data-pvc
+      - name: models
+        persistentVolumeClaim:
+          claimName: velora-models-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: velora-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: velora-service
+  namespace: velora
+  labels:
+    app: velora
+    component: core
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: api
+  - port: 9090
+    targetPort: 9090
+    name: metrics
+  selector:
+    app: velora
+    component: core
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: velora-hpa
+  namespace: velora
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: velora-core
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velora - AI Interoperability Layer Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .logo .tagline {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--success);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .status-badge.offline {
+            background: var(--danger);
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 14px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Main Content Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Payment Form */
+        .payment-section {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Protocol Flow */
+        .protocol-flow {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: var(--light);
+            border-radius: 8px;
+            transition: all 0.3s;
+            opacity: 0.5;
+        }
+
+        .flow-step.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            opacity: 1;
+            transform: translateX(10px);
+        }
+
+        .flow-step.complete {
+            opacity: 1;
+            background: var(--success);
+            color: white;
+        }
+
+        .flow-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .flow-step.active .flow-icon,
+        .flow-step.complete .flow-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .flow-content {
+            flex: 1;
+        }
+
+        .flow-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .flow-description {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Transaction List */
+        .transaction-section {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .transaction-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--light);
+            transition: background 0.3s;
+        }
+
+        .transaction-item:hover {
+            background: var(--light);
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .transaction-icon.failed {
+            background: var(--danger);
+        }
+
+        .transaction-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .transaction-details p {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .transaction-amount {
+            text-align: right;
+        }
+
+        .amount-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .amount-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Performance Chart */
+        .chart-container {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .chart {
+            height: 200px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--primary), var(--primary-dark));
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: var(--light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Success Animation */
+        .success-animation {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .checkmark {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--success);
+            position: relative;
+            animation: scaleIn 0.3s;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 50px;
+            animation: fadeIn 0.3s 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <div>
+                    <h1>Velora</h1>
+                    <div class="tagline">AI Interoperability Layer</div>
+                </div>
+            </div>
+            <div class="status-badge" id="systemStatus">
+                <div class="pulse"></div>
+                <span>System Online</span>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-value" id="totalTransactions">0</div>
+                <div class="stat-change">
+                    <span>↑</span>
+                    <span>12% from last hour</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Average Latency</div>
+                <div class="stat-value" id="avgLatency">0ms</div>
+                <div class="stat-change">
+                    <span>↓</span>
+                    <span>5% improvement</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Success Rate</div>
+                <div class="stat-value" id="successRate">100%</div>
+                <div class="stat-change">
+                    <span>→</span>
+                    <span>Stable</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Protocols</div>
+                <div class="stat-value" id="activeProtocols">4</div>
+                <div class="stat-change">
+                    <span>✓</span>
+                    <span>All operational</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Payment Form -->
+            <div class="payment-section">
+                <h2 class="section-title">
+                    <span>💳</span>
+                    Process Payment Transaction
+                </h2>
+                <form id="paymentForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Amount</label>
+                            <input type="number" id="amount" value="1500.00" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Currency</label>
+                            <select id="currency">
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Debtor Account (IBAN)</label>
+                            <input type="text" id="debtorAccount" value="US12345678901234567890" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Debtor Name</label>
+                            <input type="text" id="debtorName" value="John Smith" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Creditor Account (IBAN)</label>
+                            <input type="text" id="creditorAccount" value="US98765432109876543210" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Creditor Name</label>
+                            <input type="text" id="creditorName" value="ABC Corporation" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Reference</label>
+                            <input type="text" id="reference" value="INV-2024-001" required>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span>🚀</span>
+                            Process Payment
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="fillRandomData()">
+                            <span>🎲</span>
+                            Random Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Protocol Flow -->
+            <div class="protocol-flow">
+                <h2 class="section-title">
+                    <span>🔄</span>
+                    Protocol Translation Flow
+                </h2>
+                <div id="flowSteps">
+                    <div class="flow-step" id="step1">
+                        <div class="flow-icon">📱</div>
+                        <div class="flow-content">
+                            <div class="flow-title">REST API Request</div>
+                            <div class="flow-description">Modern JSON format</div>
+                        </div>
+                    </div>
+                    <div class="flow-step" id="step2">
+                        <div class="flow-icon">📄</div>
+                        <div class="flow-content">
+                            <div class="flow-title">ISO 20022 Conversion</div>
+                            <div class="flow-description">Banking standard XML</div>
+                        </div>
+                    </div>
+                    <div class="flow-step" id="step3">
+                        <div class="flow-icon">💾</div>
+                        <div class="flow-content">
+                            <div class="flow-title">COBOL Copybook</div>
+                            <div class="flow-description">Legacy format (EBCDIC)</div>
+                        </div>
+                    </div>
+                    <div class="flow-step" id="step4">
+                        <div class="flow-icon">🖥️</div>
+                        <div class="flow-content">
+                            <div class="flow-title">CICS Transaction</div>
+                            <div class="flow-description">Mainframe processing</div>
+                        </div>
+                    </div>
+                    <div class="flow-step" id="step5">
+                        <div class="flow-icon">✅</div>
+                        <div class="flow-content">
+                            <div class="flow-title">Response</div>
+                            <div class="flow-description">Transaction complete</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="transaction-section">
+            <h2 class="section-title">
+                <span>📊</span>
+                Recent Transactions
+            </h2>
+            <div class="transaction-list" id="transactionList">
+                <!-- Transactions will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="chart-container" style="margin-top: 30px;">
+            <h2 class="section-title">
+                <span>📈</span>
+                Performance Metrics (Last Hour)
+            </h2>
+            <div class="chart" id="performanceChart">
+                <!-- Chart bars will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Transaction Successful!</h3>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="success-animation">
+                <div class="checkmark"></div>
+            </div>
+            <div style="text-align: center;">
+                <h4 id="transactionId" style="margin: 10px 0;">TXN123456789</h4>
+                <p style="color: #6b7280;">Authorization: <span id="authCode">AUTH789</span></p>
+                <p style="color: #6b7280;">Processing Time: <span id="processingTime">125ms</span></p>
+            </div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="closeModal()">
+                Done
+            </button>
+        </div>
+    </div>
+
+    <!-- Processing Modal -->
+    <div class="modal" id="processingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Processing Transaction...</h3>
+            </div>
+            <div class="loader"></div>
+            <p style="text-align: center; color: #6b7280;" id="processingStatus">
+                Converting to ISO 20022...
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let ws = null;
+        let transactionCount = 0;
+        let transactions = [];
+
+        // Initialize WebSocket
+        function initWebSocket() {
+            ws = new WebSocket('ws://localhost:8000/ws');
+            
+            ws.onopen = () => {
+                console.log('Connected to Velora');
+                document.getElementById('systemStatus').classList.remove('offline');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateMetrics(data);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                document.getElementById('systemStatus').classList.add('offline');
+            };
+            
+            ws.onclose = () => {
+                console.log('Disconnected from Velora');
+                document.getElementById('systemStatus').classList.add('offline');
+                // Reconnect after 3 seconds
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+
+        // Update metrics
+        function updateMetrics(data) {
+            if (data.total_transactions !== undefined) {
+                document.getElementById('totalTransactions').textContent = data.total_transactions;
+            }
+            if (data.avg_latency !== undefined) {
+                document.getElementById('avgLatency').textContent = data.avg_latency + 'ms';
+            }
+            if (data.success_rate !== undefined) {
+                document.getElementById('successRate').textContent = data.success_rate + '%';
+            }
+        }
+
+        // Process payment form submission
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payment = {
+                amount: parseFloat(document.getElementById('amount').value),
+                currency: document.getElementById('currency').value,
+                debtorAccount: document.getElementById('debtorAccount').value,
+                debtorName: document.getElementById('debtorName').value,
+                creditorAccount: document.getElementById('creditorAccount').value,
+                creditorName: document.getElementById('creditorName').value,
+                reference: document.getElementById('reference').value
+            };
+            
+            // Show processing modal
+            showProcessingModal();
+            
+            // Animate protocol flow
+            await animateProtocolFlow();
+            
+            // Send payment request
+            try {
+                const response = await fetch('http://localhost:8000/api/process-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payment)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Hide processing modal
+                    document.getElementById('processingModal').classList.remove('active');
+                    
+                    // Show success modal
+                    showSuccessModal(result);
+                    
+                    // Add to transaction list
+                    addTransaction(payment, result);
+                    
+                    // Update metrics
+                    transactionCount++;
+                    updateLocalMetrics();
+                } else {
+                    alert('Transaction failed: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to process payment. Make sure the API is running.');
+            } finally {
+                document.getElementById('processingModal').classList.remove('active');
+                resetProtocolFlow();
+            }
+        });
+
+        // Animate protocol flow
+        async function animateProtocolFlow() {
+            const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+            const statusMessages = [
+                'Receiving REST API request...',
+                'Converting to ISO 20022 format...',
+                'Transforming to COBOL Copybook...',
+                'Executing CICS transaction...',
+                'Processing complete!'
+            ];
+            
+            for (let i = 0; i < steps.length; i++) {
+                // Update processing status
+                document.getElementById('processingStatus').textContent = statusMessages[i];
+                
+                // Activate current step
+                document.getElementById(steps[i]).classList.add('active');
+                
+                // Wait before next step
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Mark as complete
+                document.getElementById(steps[i]).classList.remove('active');
+                document.getElementById(steps[i]).classList.add('complete');
+            }
+        }
+
+        // Reset protocol flow
+        function resetProtocolFlow() {
+            const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+            steps.forEach(step => {
+                document.getElementById(step).classList.remove('active', 'complete');
+            });
+        }
+
+        // Show processing modal
+        function showProcessingModal() {
+            document.getElementById('processingModal').classList.add('active');
+            document.getElementById('processingStatus').textContent = 'Initializing transaction...';
+        }
+
+        // Show success modal
+        function showSuccessModal(result) {
+            document.getElementById('transactionId').textContent = result.transactionId || 'TXN' + Date.now();
+            document.getElementById('authCode').textContent = result.authorizationCode || 'AUTH' + Math.floor(Math.random() * 999999);
+            document.getElementById('processingTime').textContent = (result.processingTime || 125) + 'ms';
+            document.getElementById('successModal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('active');
+            document.getElementById('processingModal').classList.remove('active');
+        }
+
+        // Add transaction to list
+        function addTransaction(payment, result) {
+            const transaction = {
+                id: result.transactionId || 'TXN' + Date.now(),
+                amount: payment.amount,
+                currency: payment.currency,
+                from: payment.debtorName,
+                to: payment.creditorName,
+                time: new Date().toLocaleTimeString(),
+                status: result.success ? 'success' : 'failed'
+            };
+            
+            transactions.unshift(transaction);
+            if (transactions.length > 10) transactions.pop();
+            
+            renderTransactions();
+        }
+
+        // Render transaction list
+        function renderTransactions() {
+            const list = document.getElementById('transactionList');
+            list.innerHTML = transactions.map(t => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon ${t.status === 'failed' ? 'failed' : ''}">
+                            ${t.status === 'success' ? '✓' : '✗'}
+                        </div>
+                        <div class="transaction-details">
+                            <h4>${t.from} → ${t.to}</h4>
+                            <p>${t.id}</p>
+                        </div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="amount-value">${t.currency} ${t.amount.toFixed(2)}</div>
+                        <div class="amount-time">${t.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Fill random data
+        function fillRandomData() {
+            const names = ['Alice Johnson', 'Bob Wilson', 'Carol Davis', 'David Brown', 'Emma White'];
+            const companies = ['XYZ Corp', 'Tech Solutions Inc', 'Global Services Ltd', 'Innovation Hub', 'Digital Dynamics'];
+            
+            document.getElementById('amount').value = (Math.random() * 9000 + 1000).toFixed(2);
+            document.getElementById('debtorName').value = names[Math.floor(Math.random() * names.length)];
+            document.getElementById('creditorName').value = companies[Math.floor(Math.random() * companies.length)];
+            document.getElementById('reference').value = 'INV-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9999);
+            
+            // Generate random IBANs
+            document.getElementById('debtorAccount').value = 'US' + Math.random().toString().substr(2, 20);
+            document.getElementById('creditorAccount').value = 'US' + Math.random().toString().substr(2, 20);
+        }
+
+        // Update local metrics
+        function updateLocalMetrics() {
+            document.getElementById('totalTransactions').textContent = transactionCount;
+            
+            // Update chart
+            updatePerformanceChart();
+        }
+
+        // Update performance chart
+        function updatePerformanceChart() {
+            const chart = document.getElementById('performanceChart');
+            const data = [65, 78, 90, 85, 92, 88, 95, 89, 93, 97];
+            
+            chart.innerHTML = data.map(value => `
+                <div class="chart-bar" style="height: ${value}%;" data-value="${value}ms"></div>
+            `).join('');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            // Try to connect to WebSocket
+            try {
+                initWebSocket();
+            } catch (e) {
+                console.log('WebSocket not available, running in demo mode');
+            }
+            
+            // Initialize chart
+            updatePerformanceChart();
+            
+            // Add some demo transactions
+            const demoTransactions = [
+                { id: 'TXN20241115001', amount: 2500, currency: 'USD', from: 'Tech Corp', to: 'Supplier A', time: '14:30:22', status: 'success' },
+                { id: 'TXN20241115002', amount: 1750, currency: 'EUR', from: 'Client B', to: 'Service Co', time: '14:28:15', status: 'success' },
+                { id: 'TXN20241115003', amount: 3200, currency: 'USD', from: 'Retail Inc', to: 'Wholesale Ltd', time: '14:25:08', status: 'success' }
+            ];
+            transactions = demoTransactions;
+            renderTransactions();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                document.getElementById('paymentForm').dispatchEvent(new Event('submit'));
+            }
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

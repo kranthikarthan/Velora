@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies for mainframe simulation
+RUN pip install --no-cache-dir asyncio
+
+# Copy mock mainframe code
+COPY demo/mock_mainframe.py /app/
+
+# Expose CICS port
+EXPOSE 2006
+
+# Run mock mainframe
+CMD ["python", "mock_mainframe.py"]

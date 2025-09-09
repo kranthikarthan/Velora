@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # Mock Mainframe Simulator
+  mock-mainframe:
+    build:
+      context: .
+      dockerfile: demo/Dockerfile.mainframe
+    container_name: velora-mock-mainframe
+    ports:
+      - "2006:2006"  # CICS Gateway port
+      - "8583:8583"  # ISO 8583 port
+    environment:
+      - MAINFRAME_TYPE=CICS
+      - ENCODING=EBCDIC
+      - RESPONSE_DELAY_MS=100
+    networks:
+      - velora-demo
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2006"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for transaction storage
+  postgres-demo:
+    image: postgres:15-alpine
+    container_name: velora-postgres-demo
+    environment:
+      POSTGRES_USER: velora
+      POSTGRES_PASSWORD: velora
+      POSTGRES_DB: velora_demo
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./demo/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - velora-demo
+
+  # Redis for caching and session
+  redis-demo:
+    image: redis:7-alpine
+    container_name: velora-redis-demo
+    ports:
+      - "6380:6379"
+    networks:
+      - velora-demo
+
+  # Velora Core API
+  velora-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: velora-api-demo
+    environment:
+      - ENVIRONMENT=demo
+      - DATABASE_URL=postgresql://velora:velora@postgres-demo:5432/velora_demo
+      - REDIS_URL=redis://redis-demo:6379/0
+      - MAINFRAME_HOST=mock-mainframe
+      - MAINFRAME_PORT=2006
+      - LOG_LEVEL=DEBUG
+      - DEMO_MODE=true
+    ports:
+      - "8000:8000"  # REST API
+      - "9090:9090"  # Metrics
+    depends_on:
+      - mock-mainframe
+      - postgres-demo
+      - redis-demo
+    networks:
+      - velora-demo
+    volumes:
+      - ./velora:/app/velora
+      - ./demo:/app/demo
+    command: python -m demo.run_demo
+
+  # Web Dashboard
+  velora-dashboard:
+    build:
+      context: .
+      dockerfile: demo/Dockerfile.dashboard
+    container_name: velora-dashboard
+    environment:
+      - API_URL=http://velora-api:8000
+      - WS_URL=ws://velora-api:8000/ws
+    ports:
+      - "3000:3000"
+    depends_on:
+      - velora-api
+    networks:
+      - velora-demo
+
+  # Monitoring Stack
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: velora-prometheus-demo
+    volumes:
+      - ./demo/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9091:9090"
+    networks:
+      - velora-demo
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: velora-grafana-demo
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - ./demo/monitoring/dashboards:/etc/grafana/provisioning/dashboards
+      - ./demo/monitoring/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - velora-demo
+
+networks:
+  velora-demo:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
