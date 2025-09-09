@@ -1,0 +1,132 @@
+[tool.poetry]
+name = "velora"
+version = "1.0.0"
+description = "AI Interoperability Layer for seamless AI agent communication and collaboration"
+authors = ["Velora Team <team@velora.ai>"]
+readme = "README.md"
+license = "Apache-2.0"
+homepage = "https://velora.ai"
+repository = "https://github.com/velora/velora"
+documentation = "https://docs.velora.ai"
+keywords = ["ai", "interoperability", "agents", "distributed-systems", "ml"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+pydantic = "^2.4.2"
+pydantic-settings = "^2.0.3"
+httpx = "^0.25.0"
+grpcio = "^1.59.0"
+grpcio-tools = "^1.59.0"
+protobuf = "^4.24.0"
+redis = "^5.0.0"
+sqlalchemy = "^2.0.0"
+alembic = "^1.12.0"
+asyncpg = "^0.29.0"
+psycopg2-binary = "^2.9.0"
+aiokafka = "^0.10.0"
+neo4j = "^5.14.0"
+pymongo = "^4.5.0"
+motor = "^3.3.0"
+numpy = "^1.24.0"
+pandas = "^2.1.0"
+scikit-learn = "^1.3.0"
+tensorflow = "^2.14.0"
+torch = "^2.1.0"
+transformers = "^4.35.0"
+langchain = "^0.0.335"
+openai = "^1.3.0"
+cryptography = "^41.0.0"
+pyjwt = "^2.8.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.6"
+prometheus-client = "^0.19.0"
+opentelemetry-api = "^1.21.0"
+opentelemetry-sdk = "^1.21.0"
+opentelemetry-instrumentation-fastapi = "^0.42b0"
+structlog = "^23.2.0"
+pyyaml = "^6.0.1"
+python-dotenv = "^1.0.0"
+click = "^8.1.7"
+rich = "^13.7.0"
+tenacity = "^8.2.3"
+cachetools = "^5.3.2"
+aiofiles = "^23.2.1"
+websockets = "^12.0"
+paho-mqtt = "^1.6.1"
+celery = {extras = ["redis"], version = "^5.3.0"}
+flower = "^2.0.1"
+kubernetes = "^28.1.0"
+boto3 = "^1.29.0"
+azure-storage-blob = "^12.19.0"
+google-cloud-storage = "^2.10.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+black = "^23.11.0"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+mypy = "^1.7.0"
+pre-commit = "^3.5.0"
+ipython = "^8.17.0"
+ipdb = "^0.13.13"
+jupyter = "^1.0.0"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.4.0"
+mkdocstrings = {extras = ["python"], version = "^0.24.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-ra -q --strict-markers --cov=velora --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["velora"]
+omit = ["*/tests/*", "*/test_*.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
